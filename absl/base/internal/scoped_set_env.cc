@@ -36,11 +36,13 @@ void SetEnvVar(const char* name, const char* value) {
 #ifdef _WIN32
   SetEnvironmentVariableA(name, value);
 #else
+#ifndef SCORPIO
   if (value == nullptr) {
     ::unsetenv(name);
   } else {
     ::setenv(name, value, 1);
   }
+#endif //SCORPIO
 #endif
 }
 

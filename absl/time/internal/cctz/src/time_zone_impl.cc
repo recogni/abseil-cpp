@@ -36,12 +36,20 @@ using TimeZoneImplByName =
 TimeZoneImplByName* time_zone_map = nullptr;
 
 // Mutual exclusion for time_zone_map.
+#ifndef SCORPIO
 std::mutex& TimeZoneMutex() {
   // This mutex is intentionally "leaked" to avoid the static deinitialization
   // order fiasco (std::mutex's destructor is not trivial on many platforms).
   static std::mutex* time_zone_mutex = new std::mutex;
   return *time_zone_mutex;
 }
+#else
+//Brett: Dunno what to do here, tried various ways to hack this.  
+//Removing seems to at least compile for now.
+//std::mutex& TimeZoneMutex() {
+ // return NULL;
+//}
+#endif //SCORPIO
 
 }  // namespace
 
@@ -60,7 +68,9 @@ bool time_zone::Impl::LoadTimeZone(const std::string& name, time_zone* tz) {
   // Then check, under a shared lock, whether the time zone has already
   // been loaded. This is the common path. TODO: Move to shared_mutex.
   {
+#ifndef SCORPIO
     std::lock_guard<std::mutex> lock(TimeZoneMutex());
+#endif
     if (time_zone_map != nullptr) {
       TimeZoneImplByName::const_iterator itr = time_zone_map->find(name);
       if (itr != time_zone_map->end()) {
@@ -71,7 +81,9 @@ bool time_zone::Impl::LoadTimeZone(const std::string& name, time_zone* tz) {
   }
 
   // Now check again, under an exclusive lock.
+#ifndef SCORPIO
   std::lock_guard<std::mutex> lock(TimeZoneMutex());
+#endif
   if (time_zone_map == nullptr) time_zone_map = new TimeZoneImplByName;
   const Impl*& impl = (*time_zone_map)[name];
   if (impl == nullptr) {
@@ -90,7 +102,9 @@ bool time_zone::Impl::LoadTimeZone(const std::string& name, time_zone* tz) {
 }
 
 void time_zone::Impl::ClearTimeZoneMapTestOnly() {
+#ifndef SCORPIO
   std::lock_guard<std::mutex> lock(TimeZoneMutex());
+#endif
   if (time_zone_map != nullptr) {
     // Existing time_zone::Impl* entries are in the wild, so we can't delete
     // them. Instead, we move them to a private container, where they are

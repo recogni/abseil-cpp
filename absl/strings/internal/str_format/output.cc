@@ -23,6 +23,9 @@ namespace str_format_internal {
 
 namespace {
 struct ClearErrnoGuard {
+#ifdef SCORPIO
+    int errno;
+#endif
   ClearErrnoGuard() : old_value(errno) { errno = 0; }
   ~ClearErrnoGuard() {
     if (!errno) errno = old_value;
@@ -40,6 +43,9 @@ void BufferRawSink::Write(string_view v) {
 }
 
 void FILERawSink::Write(string_view v) {
+#ifdef SCORPIO
+    int errno = 0;
+#endif
   while (!v.empty() && !error_) {
     // Reset errno to zero in case the libc implementation doesn't set errno
     // when a failure occurs.
@@ -50,9 +56,12 @@ void FILERawSink::Write(string_view v) {
       count_ += result;
       v.remove_prefix(result);
     } else {
+#ifndef SCORPIO
       if (errno == EINTR) {
         continue;
-      } else if (errno) {
+      } else
+#endif 
+       if (errno) {
         error_ = errno;
       } else if (std::ferror(output_)) {
         // Non-POSIX compliant libc implementations may not set errno, so we

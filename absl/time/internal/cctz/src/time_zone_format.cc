@@ -18,6 +18,10 @@
 #endif
 #endif
 
+#ifdef SCORPIO
+#undef HAS_STRPTIME
+#endif
+
 #if defined(HAS_STRPTIME) && HAS_STRPTIME
 #if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE  // Definedness suffices for strptime.
@@ -151,6 +155,7 @@ char* Format02d(char* ep, int v) {
   return ep;
 }
 
+//#ifndef SCORPIO
 // Formats a UTC offset, like +00:00.
 char* FormatOffset(char* ep, int offset, const char* mode) {
   // TODO: Follow the RFC3339 "Unknown Local Offset Convention" and
@@ -200,6 +205,8 @@ void FormatTM(std::string* out, const std::string& fmt, const std::tm& tm) {
     }
   }
 }
+
+//#endif //SCORPIO
 
 // Used for %E#S/%E#f specifiers and for data values in parse().
 template <typename T>

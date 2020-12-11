@@ -210,6 +210,10 @@ std::string FormatPack(const UntypedFormatSpecImpl format,
   return out;
 }
 
+#ifdef SCORPIO
+static int errno;
+#endif
+
 int FprintF(std::FILE* output, const UntypedFormatSpecImpl format,
             absl::Span<const FormatArgImpl> args) {
   FILERawSink sink(output);
@@ -222,7 +226,9 @@ int FprintF(std::FILE* output, const UntypedFormatSpecImpl format,
     return -1;
   }
   if (sink.count() > std::numeric_limits<int>::max()) {
+#ifndef SCORPIO
     errno = EFBIG;
+#endif
     return -1;
   }
   return static_cast<int>(sink.count());

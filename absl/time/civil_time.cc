@@ -51,10 +51,16 @@ bool ParseYearAnd(string_view fmt, string_view s, CivilT* c) {
   const std::string ss = std::string(s);  // TODO(absl-team): Avoid conversion.
   const char* const np = ss.c_str();
   char* endp;
+#ifndef SCORPIO
   errno = 0;
+#endif
   const civil_year_t y =
       std::strtoll(np, &endp, 10);  // NOLINT(runtime/deprecated_fn)
-  if (endp == np || errno == ERANGE) return false;
+  if (endp == np
+#ifndef SCORPIO
+    || errno == ERANGE
+#endif
+    ) return false;
   const std::string norm = StrCat(NormalizeYear(y), endp);
 
   const TimeZone utc = UTCTimeZone();

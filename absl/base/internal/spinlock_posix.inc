@@ -19,6 +19,10 @@
 #include <atomic>
 #include <ctime>
 
+#ifdef SCORPIO
+#include <time.h>
+#endif
+
 #include "absl/base/internal/errno_saver.h"
 #include "absl/base/internal/scheduling_mode.h"
 #include "absl/base/port.h"
@@ -28,15 +32,24 @@ extern "C" {
 ABSL_ATTRIBUTE_WEAK void AbslInternalSpinLockDelay(
     std::atomic<uint32_t>* /* lock_word */, uint32_t /* value */, int loop,
     absl::base_internal::SchedulingMode /* mode */) {
+#ifndef SCORPIO
   absl::base_internal::ErrnoSaver errno_saver;
+#endif
   if (loop == 0) {
   } else if (loop == 1) {
+#ifndef SCORPIO
     sched_yield();
+#endif
   } else {
     struct timespec tm;
+#ifdef SCORPIO
+    (void)tm;
+#endif
     tm.tv_sec = 0;
     tm.tv_nsec = absl::base_internal::SpinLockSuggestedDelayNS(loop);
+#ifndef SCORPIO
     nanosleep(&tm, nullptr);
+#endif
   }
 }
 

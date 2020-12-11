@@ -46,6 +46,7 @@ int64_t ExponentialBiased::GetSkipCount(int64_t mean) {
   uint64_t rng = NextRandom(rng_);
   rng_ = rng;
 
+#ifndef SCORPIO
   // Take the top 26 bits as the random number
   // (This plus the 1<<58 sampling bound give a max possible step of
   // 5194297183973780480 bytes.)
@@ -67,6 +68,11 @@ int64_t ExponentialBiased::GetSkipCount(int64_t mean) {
   double value = std::round(interval);
   bias_ = interval - value;
   return value;
+#else
+    (void) mean;
+    double foo = 0;
+    return foo;
+#endif
 }
 
 int64_t ExponentialBiased::GetStride(int64_t mean) {

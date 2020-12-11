@@ -28,8 +28,13 @@ namespace base_internal {
 // add instrumentation, even in debug modes.
 class ErrnoSaver {
  public:
+#ifndef SCORPIO
   ErrnoSaver() : saved_errno_(errno) {}
   ~ErrnoSaver() { errno = saved_errno_; }
+#else
+  ErrnoSaver() : saved_errno_(55) {}
+  ~ErrnoSaver() { }
+#endif
   int operator()() const { return saved_errno_; }
 
  private:

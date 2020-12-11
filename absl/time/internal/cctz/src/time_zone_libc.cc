@@ -76,15 +76,19 @@ auto tm_gmtoff(const std::tm& tm) -> decltype(tm.__tm_gmtoff) {
   return tm.__tm_gmtoff;
 }
 #else
+#ifndef SCORPIO
 template <typename T>
 auto tm_gmtoff(const T& tm) -> decltype(tm.tm_gmtoff) {
   return tm.tm_gmtoff;
 }
+#else
 template <typename T>
-auto tm_gmtoff(const T& tm) -> decltype(tm.__tm_gmtoff) {
-  return tm.__tm_gmtoff;
+auto tm_gmtoff(const T& tm) -> long {
+  return (long)7; 
 }
+#endif //SCORPIO
 #endif  // tm_gmtoff
+
 #if defined(tm_zone)
 auto tm_zone(const std::tm& tm) -> decltype(tm.tm_zone) { return tm.tm_zone; }
 #elif defined(__tm_zone)
@@ -92,6 +96,7 @@ auto tm_zone(const std::tm& tm) -> decltype(tm.__tm_zone) {
   return tm.__tm_zone;
 }
 #else
+#ifndef SCORPIO
 template <typename T>
 auto tm_zone(const T& tm) -> decltype(tm.tm_zone) {
   return tm.tm_zone;
@@ -100,6 +105,13 @@ template <typename T>
 auto tm_zone(const T& tm) -> decltype(tm.__tm_zone) {
   return tm.__tm_zone;
 }
+#else
+template <typename T>
+auto tm_zone(const T& tm) -> char * {
+  (void)tm;
+  return NULL;
+}
+#endif //SCORPIO
 #endif  // tm_zone
 #endif
 

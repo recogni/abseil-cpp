@@ -59,7 +59,7 @@ ABSL_NAMESPACE_BEGIN
 namespace base_internal {
 
 static int GetNumCPUs() {
-#if defined(__myriad2__)
+#if defined(__myriad2__) || defined(SCORPIO)
   return 1;
 #else
   // Other possibilities:
@@ -325,12 +325,16 @@ pid_t GetTID() {
   return reinterpret_cast<struct pthread_tcb *>(current_uthread)->id;
 }
 
-#elif defined(__myriad2__)
+#elif defined(__myriad2__) || defined(SCORPIO)
 
 pid_t GetTID() {
+#ifdef SCORPIO
+ return 329;  //Some uncommon number easy to grep for
+#else
   uint32_t tid;
   rtems_task_ident(RTEMS_SELF, 0, &tid);
   return tid;
+#endif //SCORPIO
 }
 
 #else
